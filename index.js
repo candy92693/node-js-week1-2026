@@ -1,4 +1,5 @@
 const fs = require('fs/promises');
+const { json } = require('stream/consumers');
 
 // ========== 任務一：讀取會員清單 ==========
 /**
@@ -14,6 +15,41 @@ const fs = require('fs/promises');
 async function readMembers(filePath) {
   // TODO: 實作此函式
   // 提示：用 fs/promises 的 readFile，記得加 'utf-8'，再用 JSON.parse 轉成物件
+  try{
+    /*
+    * fs.readFile本身回傳Promise >>> Promise<string>
+    * await等待Promise完成，取得Promise成功回傳的值: Promise<string> --await--> string
+    * 如果要在函式內使用 await，這個函式必須宣告為 async
+    * Promise 是一個物件（Object），代表一個非同步工作的最終結果。
+    */
+    //-----------------------------------------------------------------------------------
+    /*比較
+    * 1.無await(外送員正在路上保證你會收到):
+    * const fileContent = fs.readFile(...);
+    * >>> fileContent: Promise<string> (Promise物件)
+    * 2.有await(等待Promise完成，取得真正的資料):
+    * const filecontent = await fs.readFile(...);
+    * >>> fileContent: string
+    //----------------------------------------------------------------------------------
+    /*
+    * filecontent回傳的是字串(String)
+    * ex: "[{"name":"小華"},{"name":"小美"}]"
+    */
+    const fileContent = await fs.readFile(filePath,'utf-8');
+    /*
+    * 將 JSON 字串(String)解析成 JavaScript 陣列(Array)
+    * ex:
+    * [
+    *   {name: "小華" },
+    *   {name: "小美" }
+    * ]
+    */
+    const members = JSON.parse(fileContent);
+    return members;
+  }catch (err){
+    console.error('發生錯誤:',err.message);
+    throw err;
+  }
 }
 
 // ========== 任務二：篩選 VIP 會員 ==========
@@ -30,8 +66,18 @@ async function readMembers(filePath) {
  *   ]); // [{ name: '小華', level: 'VIP' }]
  */
 function filterVIP(members) {
+
   // TODO: 實作此函式
   // 提示：用 Array.prototype.filter，不要修改原陣列
+  /*
+  * filter() 會依序把陣列中的每一個元素（Element）傳進函式，函式只回傳 true 或 false，並保留callback回傳 true的元素，組成一個新的陣列回傳。
+  * true--->留下入新的空陣列; false ---> 丟掉
+  * members.filter(...):對 members 陣列做篩選。
+  * (參數) => 表達式
+  * (member) => ...:對members陣列中的每個元素判斷，member = members[0]、member = members[1]...
+  */
+  const vipMembers = members.filter((member)=>(member.level==='VIP'));
+  return vipMembers;
 }
 
 // ========== 任務三：計算會員剩餘點數總和 ==========
