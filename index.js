@@ -91,9 +91,24 @@ function filterVIP(members) {
  *   sumCredits([{ credits: 120 }, { credits: 30 }]); // 150
  *   sumCredits([]);                                  // 0
  */
+
 function sumCredits(members) {
   // TODO: 實作此函式
   // 提示：用 reduce，初始值給 0
+  /** reduce觀念
+   *  1. 累積函式
+   *  2. callback 每一圈都會收到：
+   *      - acc：目前累積值
+   *      - member：目前處理的元素(Element)
+   *  3. callback 必須回傳新的 acc。
+   *  4. 最後 reduce 會回傳最後一次的 acc
+   *  5. 下一圈的 acc = 上一圈 callback 回傳值。
+   * 語法:
+   * reduce((參數1,參數2)=>(表達式),reduce初始值)
+   * 表達式放callback的值(回傳的值)
+   */
+  const totalCredits = members.reduce((acc,member)=>(acc + member.credits),0);
+  return totalCredits;
 }
 
 // ========== 任務四：讀取環境變數 ==========
@@ -116,6 +131,12 @@ function sumCredits(members) {
 function getGymConfig() {
   // TODO: 實作此函式
   // 提示：用 || 給預設值
+  const gymData = {
+    gymName: process.env.GYM_NAME || '未命名健身房',
+    adminName: process.env.ADMIN_NAME || '尚未指派',
+    defaultMembersPath: process.env.DEFAULT_MEMBERS_PATH,
+  };
+  return gymData;
 }
 
 // ========== 任務五：VIP 會員統計摘要（綜合題）==========
@@ -138,6 +159,19 @@ async function getVIPSummary(filePath) {
   //   2. 篩出 VIP
   //   3. 算總點數、收集姓名
   //   4. 回傳 { count, totalCredits, names }
+  const members = await readMembers(filePath);
+  const vipMembers = filterVIP(members);
+  const totalCredits = sumCredits(vipMembers);
+  //把每位VIP會員轉換成姓名
+  //目前vipMembers=[{name:'Andy',credits:100},{name:'Jerry',credits:55}....{name:'Tom',credits:500}]
+  //目標轉換成 ['Andy','Jerry',..,'Tom']
+  const vipNames = vipMembers.map((vipMember)=>(vipMember.name));
+  const vipData = {
+    count: vipMembers.length,
+    totalCredits:  totalCredits,
+    names: vipNames,
+  };
+  return vipData;
 }
 
 module.exports = {
